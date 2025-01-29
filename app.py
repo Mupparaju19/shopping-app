@@ -1,13 +1,12 @@
+
 from flask import Flask, render_template, redirect, url_for, request
 from flask_login import LoginManager, UserMixin, login_user, login_required
 
 app = Flask(__name__)
-app.secret_key = "your_secret_key_here"  # Replace with a secure key in production
+app.secret_key = "your_secret_key_here"  # Replace with a secure key
 
-# Dummy user data (for demonstration only)
-users = {
-    "admin": {"password": "admin"}
-}
+# Dummy user data
+users = {"admin": {"password": "admin"}}
 
 # Flask-Login setup
 login_manager = LoginManager()
@@ -41,7 +40,7 @@ def login():
 @app.route("/categories")
 @login_required
 def categories():
-    categories = ["Grocery", "Chocolates", "Rice"]
+    categories = ["Milk", "Rice", "Groceries"]  # Updated categories
     return render_template("categories.html", categories=categories)
 
 if __name__ == "__main__":
