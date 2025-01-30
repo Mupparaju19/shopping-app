@@ -17,9 +17,10 @@ COPY . .
 EXPOSE 5000
 
 # Use a non-root user for security reasons
-RUN adduser --disabled-password myuser
+RUN adduser --disabled-password --gecos "" myuser
 USER myuser
 
-# Run the application with Flask (production servers like Gunicorn can be used for production)
-CMD ["python", "app.py"]
+# Use Gunicorn for running the application in production
+CMD ["gunicorn", "-b", "0.0.0.0:5000", "app:app"]
+
 
