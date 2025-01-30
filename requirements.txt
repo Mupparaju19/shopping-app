@@ -1,2 +1,6 @@
-Flask==3.0.0
+Flask==2.2.3  # Use a stable version
 Flask-Login==0.6.2
+werkzeug==2.3.3  # For password hashing
+python-dotenv==0.19.2  # For loading environment variables
+gunicorn==20.1.0  # For production server (optional)
+
