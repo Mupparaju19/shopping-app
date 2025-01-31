@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-jenkins-service  # New name or same name if you're updating it
+spec:
+  selector:
+    app: jenkins  # Make sure the selector matches the label of your pods
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+      nodePort: 30001
+  type: NodePort
