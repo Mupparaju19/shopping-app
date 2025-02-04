@@ -1,4 +1,4 @@
-name: Django CI
+name: Flask CI
 
 on:
   push:
@@ -11,10 +11,11 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ['3.8', '3.9', '3.10']
+        python-version: ['3.8', '3.9', '3.10']  # Testing with different Python versions
+
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4  # Checkout the code
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
@@ -23,24 +24,24 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          python -m pip install --upgrade pip  # Upgrade pip
+          pip install -r requirements.txt      # Install dependencies from requirements.txt
 
       - name: Run Tests
         run: |
-          python manage.py test  # Update path if needed (e.g., src/manage.py)
+          pytest tests/  # Run tests from the 'tests' directory (change if needed)
 
       - name: Upload Test Results (Optional)
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: test-results-${{ matrix.python-version }}
-          path: test-results.xml
+          path: test-results.xml  # Upload the test results if you want to keep them as artifacts
 
       - name: Cache Dependencies (Optional)
         uses: actions/cache@v3
         with:
-          path: ~/.cache/pip
+          path: ~/.cache/pip  # Cache pip dependencies for faster future builds
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
           restore-keys: |
             ${{ runner.os }}-pip-
