@@ -22,10 +22,7 @@ jobs:
       run: |
         docker build -t murali54321/shopping-app:$(date +%Y%m%d%H%M%S) -f Dockerfile .
 
-    # Pull the Docker image (ensure the correct tag is being used)
-    - name: Pull Docker Image
-      run: |
-        docker pull murali54321/shopping-app:$(date +%Y%m%d%H%M%S)
+   
 
     # Push the Docker image to Docker Hub (use the same tag here)
     - name: Push Docker Image
