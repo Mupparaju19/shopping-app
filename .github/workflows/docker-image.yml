@@ -7,21 +7,27 @@ on:
     branches: [ "main" ]
 
 jobs:
-
   build:
-
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v4  # Checkout the code
 
+    # Set up Docker Buildx (required for multi-platform builds)
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2  
+
+    # Build the Docker image and tag it with the current date (or any unique tag)
     - name: Build Docker image
-      run: docker build -t murali54321/shopping-app -f Dockerfile .
+      run: |
+        docker build -t murali54321/shopping-app:$(date +%Y%m%d%H%M%S) -f Dockerfile .
+
+    # Pull the Docker image (ensure the correct tag is being used)
     - name: Pull Docker Image
       run: |
-          docker pull murali54321/shopping-app:latest
+        docker pull murali54321/shopping-app:$(date +%Y%m%d%H%M%S)
 
+    # Push the Docker image to Docker Hub (use the same tag here)
     - name: Push Docker Image
-      run: docker push murali54321/shopping-app:tagname 
+      run: |
+        docker push murali54321/shopping-app:$(date +%Y%m%d%H%M%S)
