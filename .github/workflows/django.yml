@@ -11,40 +11,38 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
+    strategy:  # 🔽 Proper indentation under "build"
       matrix:
-        python-version: [3.8, 3.9, 3.10]  # Valid Python versions
-      max-parallel: 4
+        python-version: ['3.8', '3.9', '3.10']
+    steps:  # 🔽 Steps belong directly under the job, not inside the matrix
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4  # Upgraded to v4 (latest)
+        with:
+          python-version: ${{ matrix.python-version }}
 
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v3
-      with:
-        python-version: ${{ matrix.python-version }}
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
-    - name: Install Dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
+      - name: Run Tests
+        run: |
+          python manage.py test
 
-    - name: Run Tests
-      run: |
-        python manage.py test
+      - name: Upload Test Results (Optional)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.python-version }}
+          path: test-results.xml
 
-    - name: Upload Test Results (Optional)
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: test-results-${{ matrix.python-version }}
-        path: test-results.xml
-
-    - name: Cache Dependencies (Optional)
-      uses: actions/cache@v3
-      with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-        restore-keys: |
-          ${{ runner.os }}-pip-
+      - name: Cache Dependencies (Optional)
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
