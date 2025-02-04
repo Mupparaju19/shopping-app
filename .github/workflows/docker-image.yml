@@ -20,6 +20,8 @@ jobs:
     - name: Build Docker image
       run: docker build -t murali54321/shopping-app -f Dockerfile .
     - name: Pull Docker Image
-      run: docker pull murali54321/shopping-app:latest . 
+      run: |
+          docker pull murali54321/shopping-app:latest
+
     - name: Push Docker Image
-      run: docker push murali54321/shopping-app:tagname .
+      run: docker push murali54321/shopping-app:tagname 
