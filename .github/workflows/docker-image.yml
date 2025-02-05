@@ -1,4 +1,4 @@
-name: Docker Image CI
+name: Docker Image CI/CD
 
 on:
   push:
@@ -7,14 +7,11 @@ on:
 
 jobs:
   build:
-    strategy:
-      matrix:
-        runner: [ubuntu-latest]  # Run on both runners
-
-    runs-on: ${{ matrix.runner }}
+    name: Build Docker Image
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
       - name: Set up Docker Buildx
@@ -31,6 +28,49 @@ jobs:
 
       - name: List Docker Images (Debugging)
         run: docker images
+
+      - name: Upload Artifact (Docker Image)
+        uses: actions/upload-artifact@v3
+        with:
+          name: docker-image
+          path: .
+  
+  test:
+    name: Test Docker Image
+    runs-on: ubuntu-latest
+    needs: build  # Run only after build is complete
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Download Built Image
+        uses: actions/download-artifact@v3
+        with:
+          name: docker-image
+          path: .
+
+      - name: Run Container for Testing
+        run: |
+          docker run -d --name test-container $IMAGE_TAG
+          sleep 5  # Give container time to start
+          docker ps | grep test-container  # Verify it is running
+
+      - name: Run Tests Inside the Container
+        run: |
+          docker exec test-container curl -f http://localhost:5000 || exit 1
+
+      - name: Cleanup Test Container
+        run: docker rm -f test-container
+  
+  deploy:
+    name: Deploy Docker Image
+    runs-on: ubuntu-latest
+    needs: test  # Run only after tests pass
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
