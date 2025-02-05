@@ -9,7 +9,7 @@ jobs:
   build:
     strategy:
       matrix:
-        runner: [ubuntu-latest, self-hosted]  # Run on both runners
+        runner: [ubuntu-latest]  # Run on both runners
 
     runs-on: ${{ matrix.runner }}
 
