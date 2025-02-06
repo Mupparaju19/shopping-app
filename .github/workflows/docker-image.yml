@@ -90,6 +90,6 @@ jobs:
 
       - name: Push Docker Images
         run: |
-          docker pull ${{ needs.build.outputs.image_tag }}
-          docker push ${{ needs.build.outputs.image_tag }}
-          docker push murali54321/shopping-app:latest
+          # Push the image directly to Docker Hub without pulling it
+          docker push ${{ needs.build.outputs.image_tag }}  # Push the tagged image
+          docker push murali54321/shopping-app:latest  # Push the latest tag
