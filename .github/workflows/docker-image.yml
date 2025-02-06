@@ -10,7 +10,7 @@ jobs:
     name: Build Docker Image
     runs-on: ubuntu-latest
     outputs:
-      image_tag: ${{ steps.set_tag.outputs.image_tag }}
+      image_tag: ${{ steps.build.outputs.image_tag }}
 
     steps:
       - name: Checkout Repository
@@ -25,20 +25,23 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_TOKEN }}
 
-      - name: Generate and Set Image Tag
-        id: set_tag
-        run: |
-          IMAGE_TAG=murali54321/shopping-app:$(date +%Y%m%d%H%M%S)
-          echo "image_tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
-          echo "Generated tag: $IMAGE_TAG"
-
       - name: Build and Tag Image
+        id: build
         run: |
+          # Generate timestamped image tag
+          IMAGE_TAG=murali54321/shopping-app:$(date +%Y%m%d%H%M%S)
+          
+          # Build with both timestamped and latest tags
           docker buildx build --platform linux/amd64 \
-            -t ${{ steps.set_tag.outputs.image_tag }} \
+            -t $IMAGE_TAG \
             -t murali54321/shopping-app:latest \
             -f Dockerfile . --load
-          docker save -o image.tar ${{ steps.set_tag.outputs.image_tag }}
+          
+          # Save image for testing
+          docker save -o image.tar $IMAGE_TAG
+          
+          # Set output for other jobs
+          echo "image_tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
 
       - name: Upload Image Artifact
         uses: actions/upload-artifact@v4
@@ -67,15 +70,15 @@ jobs:
           sleep 15
           docker ps -a
 
-      - name: Verify Container Status
+      - name: Verify Container Health
         run: |
-          STATUS=$(docker inspect --format '{{.State.Status}}' test-container)
-          if [ "$STATUS" != "running" ]; then
-            echo "Container is not running (status: $STATUS)"
+          CONTAINER_STATUS=$(docker inspect --format '{{.State.Status}}' test-container)
+          if [ "$CONTAINER_STATUS" != "running" ]; then
+            echo "Container failed to start. Status: $CONTAINER_STATUS"
             exit 1
           fi
 
-      - name: Cleanup
+      - name: Cleanup Test Container
         if: always()
         run: docker rm -f test-container
 
@@ -95,3 +98,4 @@ jobs:
         run: |
           docker push ${{ needs.build.outputs.image_tag }}
           docker push murali54321/shopping-app:latest
+          
