@@ -90,5 +90,5 @@ jobs:
 
       - name: Push Docker Images
         run: |  
-          docker push murali54321/shopping-app:1.0
+          docker push murali54321/shopping-app:$IMAGE_TAG
           docker push murali54321/shopping-app:latest  
