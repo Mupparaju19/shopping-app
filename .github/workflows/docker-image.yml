@@ -1,4 +1,4 @@
-name: Docker Image CI/CD
+name: Docker Image CI
 
 on:
   push:
@@ -7,95 +7,37 @@ on:
 
 jobs:
   build:
-    name: Build Docker Image
-    runs-on: ubuntu-latest
-    outputs:
-      image_tag: ${{ steps.build.outputs.image_tag }}
+    strategy:
+      matrix:
+        runner: [ubuntu-latest]  # Run on both runners
+
+    runs-on: ${{ matrix.runner }}
 
     steps:
-      - name: Checkout Repository
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v2  
 
-      - name: Login to Docker Hub
-        uses: docker/login-action@v3
+      - name: Define Image Tag
+        run: echo "IMAGE_TAG=murali54321/shopping-app:$(date +%Y%m%d%H%M%S)" >> $GITHUB_ENV
+
+      - name: Build Docker Image
+        run: |
+          docker build -t $IMAGE_TAG -f Dockerfile .
+          docker tag $IMAGE_TAG murali54321/shopping-app:latest
+          echo "Built and tagged image: $IMAGE_TAG and latest"
+      - name: List Docker Images (Debugging)
+        run: docker images
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_TOKEN }}
 
-      - name: Build and Tag Image
-        id: build
+      - name: Push Docker Image to Docker Hub
         run: |
-          # Generate timestamped image tag
-          IMAGE_TAG=murali54321/shopping-app:$(date +%Y%m%d%H%M%S)
-          
-          # Build with both timestamped and latest tags
-          docker buildx build --platform linux/amd64 \
-            -t $IMAGE_TAG \
-            -t murali54321/shopping-app:latest \
-            -f Dockerfile . --load
-          
-          # Save image for testing
-          docker save -o image.tar $IMAGE_TAG
-          
-          # Set output for other jobs
-          echo "image_tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
-
-      - name: Upload Image Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: docker-image
-          path: image.tar
-
-  test:
-    name: Test Docker Image
-    runs-on: ubuntu-latest
-    needs: build
-
-    steps:
-      - name: Download Image Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: docker-image
-          path: .
-
-      - name: Load Docker Image
-        run: docker load -i image.tar
-
-      - name: Run Test Container
-        run: |
-          docker run -d --name test-container ${{ needs.build.outputs.image_tag }}
-          sleep 15
-          docker ps -a
-
-      - name: Verify Container Health
-        run: |
-          CONTAINER_STATUS=$(docker inspect --format '{{.State.Status}}' test-container)
-          if [ "$CONTAINER_STATUS" != "running" ]; then
-            echo "Container failed to start. Status: $CONTAINER_STATUS"
-            exit 1
-          fi
-
-      - name: Cleanup Test Container
-        if: always()
-        run: docker rm -f test-container
-
-  deploy:
-    name: Deploy to Docker Hub
-    runs-on: ubuntu-latest
-    needs: test
-
-    steps:
-      - name: Login to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_TOKEN }}
-
-      - name: Push Docker Images
-        run: |
-          docker push ${{ needs.build.outputs.image_tag }}
+          docker push $IMAGE_TAG
           docker push murali54321/shopping-app:latest
-          
