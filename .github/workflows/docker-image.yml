@@ -89,6 +89,5 @@ jobs:
           password: ${{ secrets.DOCKER_TOKEN }}
 
       - name: Push Docker Images
-        run: |
-         docker push ${{ needs.build.outputs.image_tag }}  # Push the tagged image (e.g., murali54321/shopping-app:YYYYMMDDHHMMSS)
-          docker push murali54321/shopping-app:latest  # Push the latest tag
+        run: |  
+          docker push murali54321/shopping-app:latest  
