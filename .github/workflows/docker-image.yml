@@ -9,6 +9,8 @@ jobs:
   build:
     name: Build Docker Image
     runs-on: ubuntu-latest
+    outputs:
+      image_tag: ${{ steps.define_image_tag.outputs.image_tag }}  # Output IMAGE_TAG for use in other jobs
 
     steps:
       - name: Checkout Repository
@@ -18,7 +20,10 @@ jobs:
         uses: docker/setup-buildx-action@v2  
 
       - name: Define Image Tag
+        id: define_image_tag
         run: echo "IMAGE_TAG=murali54321/shopping-app:$(date +%Y%m%d%H%M%S)" >> $GITHUB_ENV
+        outputs:
+          image_tag: ${{ env.IMAGE_TAG }}  # Set IMAGE_TAG as an output
 
       - name: Build Docker Image
         run: |
@@ -52,7 +57,7 @@ jobs:
 
       - name: Run Container for Testing
         run: |
-          docker run -d --name test-container $IMAGE_TAG
+          docker run -d --name test-container ${{ needs.build.outputs.image_tag }}
           sleep 5  # Give container time to start
           docker ps | grep test-container  # Verify it is running
 
@@ -80,5 +85,5 @@ jobs:
 
       - name: Push Docker Image to Docker Hub
         run: |
-          docker push $IMAGE_TAG
+          docker push ${{ needs.build.outputs.image_tag }}
           docker push murali54321/shopping-app:latest
