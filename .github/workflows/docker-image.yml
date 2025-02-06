@@ -9,8 +9,6 @@ jobs:
   build:
     name: Build Docker Image
     runs-on: ubuntu-latest
-    outputs:
-      image_tag: ${{ steps.define_image_tag.outputs.image_tag }}  # Output IMAGE_TAG for use in other jobs
 
     steps:
       - name: Checkout Repository
@@ -22,8 +20,6 @@ jobs:
       - name: Define Image Tag
         id: define_image_tag
         run: echo "IMAGE_TAG=murali54321/shopping-app:$(date +%Y%m%d%H%M%S)" >> $GITHUB_ENV
-        outputs:
-          image_tag: ${{ env.IMAGE_TAG }}  # Set IMAGE_TAG as an output
 
       - name: Build Docker Image
         run: |
@@ -39,6 +35,11 @@ jobs:
         with:
           name: docker-image
           path: .
+        
+      - name: Set IMAGE_TAG as an output
+        id: set_outputs
+        run: echo "image_tag=$IMAGE_TAG" >> $GITHUB_ENV
+        # Use `set-output` for exporting output if necessary, but for now, we export via $GITHUB_ENV
   
   test:
     name: Test Docker Image
