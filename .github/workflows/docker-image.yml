@@ -5,6 +5,9 @@ on:
     branches:
       - main
 
+env:
+  IMAGE_TAG: murali54321/shopping-app:$(date +%Y%m%d%H%M%S)
+
 jobs:
   build:
     name: Build Docker Image
@@ -16,10 +19,6 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-
-      - name: Define Image Tag
-        id: define_image_tag
-        run: echo "IMAGE_TAG=murali54321/shopping-app:$(date +%Y%m%d%H%M%S)" >> $GITHUB_ENV
 
       - name: Build Docker Image
         run: |
@@ -39,14 +38,6 @@ jobs:
           name: docker-image
           path: image.tar
 
-      - name: Set outputs
-        run: |
-          echo "image_tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
-        id: set_outputs
-
-    outputs:
-      image_tag: ${{ steps.set_outputs.outputs.image_tag }}
-
   test:
     name: Test Docker Image
     runs-on: ubuntu-latest
@@ -64,7 +55,7 @@ jobs:
 
       - name: Run Container for Testing
         run: |
-          docker run -d --name test-container ${{ needs.build.outputs.image_tag }}
+          docker run -d --name test-container $IMAGE_TAG
           sleep 15  # Increased startup time
           docker ps -a  # Show all containers for debugging
 
@@ -89,6 +80,6 @@ jobs:
           password: ${{ secrets.DOCKER_TOKEN }}
 
       - name: Push Docker Images
-        run: |  
-          docker push murali54321/shopping-app:${{ needs.build.outputs.image_tag }}
+        run: |
+          docker push $IMAGE_TAG
           docker push murali54321/shopping-app:latest
