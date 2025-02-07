@@ -40,4 +40,4 @@ jobs:
       - name: Push Docker Image to Docker Hub
         run: |
           docker push $IMAGE_TAG
-          docker push murali54321/shopping-app:latest 
+          docker push murali54321/shopping-app:latest
