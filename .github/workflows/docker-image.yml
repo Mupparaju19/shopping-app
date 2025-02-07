@@ -1,9 +1,7 @@
 name: Docker Image CI
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:  # This allows manual triggering from GitHub UI
 
 jobs:
   build:
@@ -28,6 +26,7 @@ jobs:
           docker build -t $IMAGE_TAG -f Dockerfile .
           docker tag $IMAGE_TAG murali54321/shopping-app:latest
           echo "Built and tagged image: $IMAGE_TAG and latest"
+      
       - name: List Docker Images (Debugging)
         run: docker images
 
